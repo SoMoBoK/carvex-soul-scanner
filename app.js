@@ -1,8 +1,12 @@
-// =============== Wallet Providers ===============
+// ==============================
+// Wallet + Providers
+// ==============================
+let walletAddress = null;
+
 function getBackpackProvider() {
-  if ("xnft" in window && window.xnft.solana) {
-    return window.xnft.solana;
-  }
+  if (window.backpack) return window.backpack;
+  if (window.Backpack) return window.Backpack;
+  if (window.solana && window.solana.isBackpack) return window.solana;
   return null;
 }
 
@@ -11,9 +15,27 @@ function getBaseProvider() {
   return null;
 }
 
-let walletAddress = "";
+// ==============================
+// CARV Profile Fetch
+// ==============================
+async function getCarvProfile(uid) {
+  try {
+    const res = await fetch(`https://api.carv.io/v1/profile/${uid}`);
+    const data = await res.json();
 
-// =============== Soul Scoring Logic ===============
+    if (data?.data) {
+      document.getElementById("carvProfile").style.display = "block";
+      document.getElementById("carvAvatar").src = data.data.avatar;
+      document.getElementById("carvName").innerText = data.data.username;
+    }
+  } catch (e) {
+    console.log("CARV API Error:", e);
+  }
+}
+
+// ==============================
+// Soul Logic
+// ==============================
 function getSoulArchetype(score) {
   if (score >= 90) return "✨ Visionary";
   if (score >= 75) return "⚡ Builder";
@@ -25,96 +47,92 @@ function getSoulXP(score) {
   return Math.floor(score * 1.2);
 }
 
-// Mock soul scoring — you can replace later
-function generateRandomScore() {
-  return Math.floor(Math.random() * 40) + 60; // 60–100 range
-}
-
-// =============== UI Elements ===============
-const connectBtn = document.getElementById("connectBtn");
-const scanBtn = document.getElementById("scanBtn");
-const resultBox = document.getElementById("result");
-const carvInput = document.getElementById("carvUid");
-
-// =============== Wallet Connect ===============
-connectBtn.onclick = async () => {
+// ==============================
+// Wallet Connect Button
+// ==============================
+document.getElementById("connectBtn").onclick = async () => {
   const backpack = getBackpackProvider();
   const base = getBaseProvider();
+
   let provider = backpack || base;
 
   if (!provider) {
-    alert("No wallet detected. Install Backpack or MetaMask/Base.");
+    alert("No wallet found. Install Backpack or MetaMask.");
     return;
   }
 
   try {
+    // Base (MetaMask)
     if (provider === base) {
       const accounts = await provider.request({ method: "eth_requestAccounts" });
       walletAddress = accounts[0];
-    } else {
-      const res = await provider.connect();
-      walletAddress = res.publicKey.toString();
+      document.getElementById("wallet").innerText = "Base Wallet: " + walletAddress;
+      document.getElementById("scanBtn").disabled = false;
+      return;
     }
 
-    document.getElementById("wallet").innerText = `Wallet: ${walletAddress}`;
-    scanBtn.disabled = false;
-  } catch (e) {
-    alert("Wallet connection failed: " + e.message);
+    // Backpack
+    const res = await provider.connect();
+    walletAddress = res.publicKey.toString();
+    document.getElementById("wallet").innerText = "Backpack Wallet: " + walletAddress;
+    document.getElementById("scanBtn").disabled = false;
+  } catch (err) {
+    alert("Wallet connection failed: " + err.message);
   }
 };
 
-// =============== Scan Soul ===============
-scanBtn.onclick = () => {
-  const carvUid = carvInput.value.trim() || "Not Provided";
+// ==============================
+// Scan Soul Button
+// ==============================
+document.getElementById("scanBtn").onclick = async () => {
+  const uid = document.getElementById("carvUid").value;
+  const resultBox = document.getElementById("result");
+
+  if (uid) {
+    document.getElementById("uid").innerText = "CARV UID: " + uid;
+    getCarvProfile(uid);
+  }
 
   // Show scanning animation
+  resultBox.style.display = "block";
   resultBox.innerHTML = `
-    <div style="font-weight:600; margin-top:15px; font-size:18px;">
-      🔍 Scanning Soul...
-    </div>
     <div class="spinner"></div>
+    <p>🔍 Scanning soul...</p>
   `;
 
   setTimeout(() => {
-    const score = generateRandomScore();
+    const score = 72; // static for demo — later dynamic via CARV API
     const archetype = getSoulArchetype(score);
     const xp = getSoulXP(score);
 
     resultBox.innerHTML = `
       ✅ <b>Soul Score:</b> ${score}<br>
-      🌐 <b>CARV UID:</b> ${carvUid}<br>
       🧠 <b>Traits:</b> Loyal, Curious, Builder<br>
       🎭 <b>Archetype:</b> ${archetype}<br>
       ⭐ <b>Earned XP:</b> ${xp}<br>
-      ✨ <b>AI Insight:</b> You're a Web3 explorer carving your destiny.<br><br>
+      🪪 <b>CARV UID:</b> ${uid || "Not Provided"}<br><br>
+      ✨ AI Insight:<br>You're a Web3 explorer carving your destiny.<br><br>
 
-      <button id="shareBtn">Share on X</button>
+      <button id="shareX">Share on X 🕊️</button>
     `;
 
-    // Add share button logic
-    document.getElementById("shareBtn").onclick = () => {
-      const text = `Just scanned my Web3 Soul on CARV!  
-Soul Score: ${score}  
-Archetype: ${archetype}  
-XP Earned: ${xp}  
-Build your Web3 identity now 👇  
-https://carv.io`;
+    document.getElementById("shareX").onclick = () => {
+      const text = `I just scanned my Web3 Soul on CARV 🔮
+Soul Score: ${score}
+Archetype: ${archetype}
+XP Earned: ${xp}
+Explore your soul: carvex-soul-scanner.vercel.app`;
 
-      window.open(
-        `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
-        "_blank"
-      );
+      const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+      window.open(url, "_blank");
     };
 
-    // Style share button
-    const shareBtn = document.getElementById("shareBtn");
-    shareBtn.style.padding = "10px 18px";
-    shareBtn.style.background = "linear-gradient(90deg,#00c2ff,#0077ff)";
-    shareBtn.style.color = "#fff";
-    shareBtn.style.border = "none";
-    shareBtn.style.borderRadius = "10px";
-    shareBtn.style.cursor = "pointer";
-    shareBtn.style.fontWeight = "600";
-  }, 1500);
+  }, 1400);
 };
 
+// ==============================
+// Dark Mode Toggle
+// ==============================
+document.getElementById("toggleDark").onclick = () => {
+  document.body.classList.toggle("dark");
+};
