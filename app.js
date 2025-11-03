@@ -43,8 +43,23 @@ document.getElementById("connectBtn").onclick = async () => {
 document.getElementById("scanBtn").onclick = async () => {
   const uid = document.getElementById("carvUid").value;
   if (uid) document.getElementById("uid").innerText = "CARV UID: " + uid;
+async function getCarvProfile(uid) {
+  try {
+    const res = await fetch(`https://api.carv.io/v1/profile/${uid}`);
+    const data = await res.json();
 
-  document.getElementById("result").innerText = "🔍 Scanning soul...";
+    document.getElementById("carvProfile").style.display = "block";
+    document.getElementById("carvAvatar").src = data.data.avatar;
+    document.getElementById("carvName").innerText = data.data.username;
+
+  } catch (err) {
+    console.log("CARV API error:", err);
+  }
+}
+
+  document.getElementById const uid = document.getElementById("carvUid").value;
+getCarvProfile(uid);
+("result").innerText = "🔍 Scanning soul...";
 
   setTimeout(() => {
     document.getElementById("result").innerHTML =
