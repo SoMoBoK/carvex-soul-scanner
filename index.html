@@ -7,24 +7,29 @@
 <style>
   body {
     font-family: 'Inter', sans-serif;
-    background: #f7faff;
+    background: linear-gradient(140deg, #e9f4ff, #f8eaff, #e9fff4);
     color: #0b1221;
     text-align: center;
     padding: 40px;
+    min-height: 100vh;
   }
 
-  h1 {
-    font-size: 32px;
-    font-weight: 700;
-    margin-bottom: 15px;
+  h2 {
+    font-size: 34px;
+    font-weight: 800;
+    margin-bottom: 25px;
+    background: linear-gradient(90deg, #0077ff, #9b51e0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   input {
     padding: 12px;
     width: 280px;
-    border: 1px solid #ccd9ff;
+    border: 2px solid #bcd1ff;
     border-radius: 10px;
     outline: none;
+    background: white;
   }
 
   button {
@@ -32,16 +37,18 @@
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    background: #00c2ff;
+    background: linear-gradient(90deg, #00c2ff, #0077ff);
+    color: white;
     font-weight: 600;
+    transition: 0.2s;
   }
 
   button:hover {
-    opacity: 0.85;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   }
 
-  /* shared styling for scan result */
-  #result, #resultBox {
+  #resultBox, #result {
     margin-top: 24px;
     padding: 20px;
     background: white;
@@ -50,8 +57,8 @@
     margin-left: auto;
     margin-right: auto;
     text-align: left;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.06);
-    color: #0b1221;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    border: 2px solid #e2e8ff;
   }
 
   .badge {
