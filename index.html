@@ -1,137 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>CARV Soul Scanner 🔮</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CARV Soul Scanner</title>
+<link rel="icon" href="https://carv.io/favicon.ico">
 
 <style>
-  body {
-    font-family: 'Inter', sans-serif;
-    background: linear-gradient(140deg, #e9f4ff, #f8eaff, #e9fff4);
-    color: #0b1221;
-    text-align: center;
-    padding: 40px;
-    min-height: 100vh;
-    transition: 0.3s;
-  }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0b0e11;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  text-align: center;
+  transition: 0.3s;
+}
+.light-mode {
+  background: #f5f5f5;
+  color: #000;
+}
 
-  body.dark {
-    background: #0d1117;
-    color: white;
-  }
+/* Header Logo */
+.logo {
+  width: 160px;
+  margin-bottom: 10px;
+}
 
-  .container {
-    max-width: 420px;
-    margin: auto;
-  }
+/* Input Box */
+input {
+  width: 280px;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  margin-top: 10px;
+  font-size: 16px;
+}
 
-  .carv-logo {
-    width: 120px;
-    margin-bottom: 10px;
-  }
+/* Scan Button */
+button {
+  margin-top: 12px;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 8px;
+  background: #00c2ff;
+  color: #000;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+button:hover {
+  opacity: 0.85;
+}
 
-  h2 {
-    font-size: 34px;
-    font-weight: 800;
-    margin-bottom: 25px;
-    background: linear-gradient(90deg, #0077ff, #9b51e0);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
+/* Soul Result Box */
+#result {
+  margin-top: 20px;
+  padding: 18px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  width: 330px;
+  min-height: 110px;
+  font-size: 16px;
+  line-height: 1.4;
+  border: 1px solid rgba(255,255,255,0.12);
+  display: none;
+}
 
-  input {
-    padding: 12px;
-    width: 280px;
-    border: 2px solid #bcd1ff;
-    border-radius: 10px;
-    outline: none;
-    background: white;
-  }
+/* Scanning Text */
+.scanning {
+  color: #00c2ff;
+  font-weight: bold;
+  animation: blink 1s infinite;
+}
+@keyframes blink {
+  50% { opacity: 0.4; }
+}
 
-  button {
-    padding: 12px 18px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    background: linear-gradient(90deg, #00c2ff, #0077ff);
-    color: white;
-    font-weight: 600;
-    transition: 0.2s;
-    margin: 4px;
-  }
+/* Spinner */
+.spinner { 
+  margin: 10px auto;
+  width: 26px;
+  height: 26px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-top: 3px solid #00c2ff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
 
-  button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  }
-
-  #result {
-    margin-top: 24px;
-    padding: 20px;
-    background: white;
-    border-radius: 14px;
-    width: 360px;
-    margin-left: auto;
-    margin-right: auto;
-    text-align: left;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    border: 2px solid #e2e8ff;
-    display: none;
-  }
-
-  /* ✅ Spinner Animation */
-  .spinner {
-    margin: 10px auto;
-    width: 26px;
-    height: 26px;
-    border: 3px solid rgba(255,255,255,0.3);
-    border-top: 3px solid #00c2ff;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin {
-    100% { transform: rotate(360deg); }
-  }
-
-  /* ✅ Dark Mode */
-  body.dark #result {
-    background: #161b22;
-    color: white;
-    border: 1px solid #283042;
-  }
+/* Dark Mode Toggle */
+.toggle {
+  margin-top: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  opacity: 0.6;
+}
 </style>
 </head>
 
 <body>
-<div class="container">
 
-  <img class="carv-logo" src="https://carv.io/logo.png" alt="CARV Logo" />
+<img class="logo" src="https://carv.io/images/logo.svg" alt="CARV Logo">
 
-  <h2>CARV Soul Scanner 🔮</h2>
+<h2>CARV Soul Scanner 🔍</h2>
 
-  <input id="carvUid" placeholder="Enter your CARV UID (optional)" />
-  <br><br>
+<input type="text" id="walletInput" placeholder="Enter Wallet / CARV uID / ENS" />
 
-  <button id="connectBtn">Connect Wallet</button>
-  <button id="scanBtn" disabled>Scan Soul</button>
-  <button id="toggleDark">🌓 Theme</button>
+<button onclick="scanSoul()">Scan Soul</button>
 
-  <p id="wallet"></p>
-  <p id="uid"></p>
+<div class="toggle" onclick="toggleTheme()">🌓 Toggle Dark Mode</div>
 
-  <!-- CARV Profile -->
-  <div id="carvProfile" style="display:none; margin-top:20px;">
-    <img id="carvAvatar" width="80" style="border-radius:50%;" />
-    <div id="carvName" style="font-size:18px; font-weight:600; margin-top:10px;"></div>
-  </div>
-
-  <!-- Scan Result -->
-  <div id="result"></div>
-
-</div>
+<div id="result"></div>
 
 <script src="app.js"></script>
+
 </body>
 </html>
