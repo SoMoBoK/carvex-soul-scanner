@@ -1,52 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>CARV Soul Scanner 🔮</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CARV Soul Scanner 🔮</title>
+  <link rel="icon" href="https://carv.io/favicon.ico" />
 
 <style>
   body {
-    font-family: 'Inter', sans-serif;
-    background: linear-gradient(140deg, #e9f4ff, #f8eaff, #e9fff4);
-    color: #0b1221;
+    font-family: Inter, sans-serif;
+    background: #0d1117;
+    color: #e6e6e6;
     text-align: center;
     padding: 40px;
-    min-height: 100vh;
     transition: 0.3s;
   }
 
-  body.dark {
-    background: #0d1117;
-    color: white;
+  .light {
+    background: linear-gradient(140deg, #e9f4ff, #f8eaff, #e9fff4);
+    color: #0d1117;
   }
 
-  .container {
-    max-width: 420px;
-    margin: auto;
-  }
-
-  .carv-logo {
+  .header-logo {
     width: 120px;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
   }
 
   h2 {
     font-size: 34px;
     font-weight: 800;
-    margin-bottom: 25px;
     background: linear-gradient(90deg, #0077ff, #9b51e0);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    margin-bottom: 25px;
   }
 
   input {
     padding: 12px;
     width: 280px;
-    border: 2px solid #bcd1ff;
     border-radius: 10px;
-    outline: none;
-    background: white;
+    border: 2px solid #bcd1ff;
+    text-align: center;
+    margin-bottom: 8px;
   }
 
   button {
@@ -58,30 +53,37 @@
     color: white;
     font-weight: 600;
     transition: 0.2s;
-    margin: 4px;
   }
 
   button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   }
 
-  #result {
+  #scanBtn:disabled {
+    background: gray;
+    cursor: not-allowed;
+  }
+
+  .toggle-btn {
+    background: #007bff;
+    border-radius: 10px;
+    padding: 10px;
+    float: right;
+  }
+
+  #resultBox {
     margin-top: 24px;
     padding: 20px;
-    background: white;
+    background: rgba(255,255,255,0.05);
     border-radius: 14px;
     width: 360px;
     margin-left: auto;
     margin-right: auto;
     text-align: left;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    border: 2px solid #e2e8ff;
-    display: none;
+    border: 2px solid rgba(255,255,255,0.15);
   }
 
-  /* ✅ Spinner Animation */
-  .spinner {
+  .spinner { 
     margin: 10px auto;
     width: 26px;
     height: 26px;
@@ -90,46 +92,28 @@
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
-
-  @keyframes spin {
-    100% { transform: rotate(360deg); }
-  }
-
-  /* ✅ Dark Mode */
-  body.dark #result {
-    background: #161b22;
-    color: white;
-    border: 1px solid #283042;
-  }
+  @keyframes spin { 100% { transform: rotate(360deg) } }
 </style>
+
 </head>
 
 <body>
-<div class="container">
 
-  <img class="carv-logo" src="https://carv.io/logo.png" alt="CARV Logo" />
+<button id="themeToggle" class="toggle-btn">🌙</button>
 
-  <h2>CARV Soul Scanner 🔮</h2>
+<img src="https://carv.io/static/media/logo.7cadcf6cd47dc58a9a01.png" class="header-logo" />
+<h2>CARV Soul Scanner 🔮</h2>
 
-  <input id="carvUid" placeholder="Enter your CARV UID (optional)" />
-  <br><br>
+<input id="carvUid" placeholder="Enter your CARV UID (optional)" />
+<br />
+<button id="connectBtn">Connect Wallet</button>
+<button id="scanBtn" disabled>Scan Soul</button>
 
-  <button id="connectBtn">Connect Wallet</button>
-  <button id="scanBtn" disabled>Scan Soul</button>
-  <button id="toggleDark">🌓 Theme</button>
+<p id="wallet"></p>
 
-  <p id="wallet"></p>
-  <p id="uid"></p>
-
-  <!-- CARV Profile -->
-  <div id="carvProfile" style="display:none; margin-top:20px;">
-    <img id="carvAvatar" width="80" style="border-radius:50%;" />
-    <div id="carvName" style="font-size:18px; font-weight:600; margin-top:10px;"></div>
-  </div>
-
-  <!-- Scan Result -->
+<div id="resultBox" style="display:none;">
   <div id="result"></div>
-
+  <button id="shareBtn" style="margin-top:12px;">Share on X 🐦</button>
 </div>
 
 <script src="app.js"></script>
