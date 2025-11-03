@@ -3,20 +3,86 @@
 <head>
   <title>CARV Soul Scanner</title>
   <link rel="stylesheet" href="style.css">
+
+<style>
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f7faff;
+    color: #0b1221;
+    text-align: center;
+    padding: 40px;
+  }
+
+  h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 15px;
+  }
+
+  input {
+    padding: 12px;
+    width: 280px;
+    border: 1px solid #ccd9ff;
+    border-radius: 10px;
+    outline: none;
+  }
+
+  button {
+    padding: 12px 18px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: #00c2ff;
+    font-weight: 600;
+  }
+
+  button:hover {
+    opacity: 0.85;
+  }
+
+  /* shared styling for scan result */
+  #result, #resultBox {
+    margin-top: 24px;
+    padding: 20px;
+    background: white;
+    border-radius: 14px;
+    width: 360px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.06);
+    color: #0b1221;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 6px 12px;
+    background: #eafff8;
+    color: #00b686;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+</style>
 </head>
+
 <body>
+
   <h2>CARV Soul Scanner 🔮</h2>
+
   <input id="carvUid" placeholder="Enter your CARV UID (optional)">
   <button id="connectBtn">Connect Wallet</button>
   <button id="scanBtn" disabled>Scan Soul</button>
 
   <p id="wallet"></p>
-  <p id="uid"></p> <div id="carvProfile" style="display:none; margin-top:20px;">
-  <img id="carvAvatar" src="" width="80" style="border-radius:50%;" />
-  <div id="carvName" style="font-size:18px; font-weight:600; margin-top:10px;"></div>
-</div>
+  <p id="uid"></p>
 
-  <p id="result"></p>
+  <div id="carvProfile" style="display:none; margin-top:20px;">
+    <img id="carvAvatar" src="" width="80" style="border-radius:50%;" />
+    <div id="carvName" style="font-size:18px; font-weight:600; margin-top:10px;"></div>
+  </div>
+
+  <div id="result"></div>
 
   <script src="app.js"></script>
 </body>
