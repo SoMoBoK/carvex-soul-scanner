@@ -2,25 +2,35 @@
 <html>
 <head>
   <title>CARV Soul Scanner</title>
-  <link rel="stylesheet" href="style.css">
 
 <style>
   body {
     font-family: 'Inter', sans-serif;
-    background: linear-gradient(140deg, #e9f4ff, #f8eaff, #e9fff4);
-    color: #0b1221;
+    background: linear-gradient(140deg, #0b1221, #101828, #1b2436);
+    color: #e4eaff;
     text-align: center;
     padding: 40px;
     min-height: 100vh;
+    transition: 0.3s;
+  }
+
+  body.light {
+    background: linear-gradient(140deg, #e9f4ff, #f8eaff, #e9fff4);
+    color: #0b1221;
   }
 
   h2 {
     font-size: 34px;
     font-weight: 800;
     margin-bottom: 25px;
-    background: linear-gradient(90deg, #0077ff, #9b51e0);
+    background: linear-gradient(90deg, #00c8ff, #7c5cff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+  }
+
+  .logo {
+    width: 100px;
+    margin-bottom: 10px;
   }
 
   input {
@@ -41,43 +51,57 @@
     color: white;
     font-weight: 600;
     transition: 0.2s;
+    margin: 5px;
   }
 
   button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   }
 
-  #resultBox, #result {
+  #result {
     margin-top: 24px;
     padding: 20px;
-    background: white;
+    background: rgba(255,255,255,0.08);
     border-radius: 14px;
     width: 360px;
     margin-left: auto;
     margin-right: auto;
     text-align: left;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    border: 2px solid #e2e8ff;
+    border: 2px solid rgba(255,255,255,0.12);
+    display: none;
   }
 
-  .badge {
-    display: inline-block;
-    padding: 6px 12px;
-    background: #eafff8;
-    color: #00b686;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
+  .scanAnimation {
+    font-size: 20px;
+    margin-top: 20px;
+    animation: pulse 1.4s infinite;
+  }
+
+  @keyframes pulse {
+    0% { opacity: .4; }
+    50% { opacity: 1; }
+    100% { opacity: .4; }
+  }
+
+  #darkToggle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
   }
 </style>
-</head>
 
+</head>
 <body>
 
+  <button id="darkToggle">🌙</button>
+
+  <img class="logo" src="https://carv.io/favicon.png" />
   <h2>CARV Soul Scanner 🔮</h2>
 
   <input id="carvUid" placeholder="Enter your CARV UID (optional)">
+  <br><br>
+
   <button id="connectBtn">Connect Wallet</button>
   <button id="scanBtn" disabled>Scan Soul</button>
 
@@ -89,8 +113,10 @@
     <div id="carvName" style="font-size:18px; font-weight:600; margin-top:10px;"></div>
   </div>
 
+  <div id="scanStatus" class="scanAnimation"></div>
+
   <div id="result"></div>
 
-  <script src="app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
