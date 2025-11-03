@@ -1,65 +1,66 @@
-// Fixed Backpack detection and connect logic
+// Backpack wallet logic
 let walletAddress = null;
 
 function getBackpackProvider() {
-  // Backpack sometimes injects under window.backpack or window.Backpack or window.solana (with isBackpack)
   if (window.backpack) return window.backpack;
   if (window.Backpack) return window.Backpack;
   if (window.solana && window.solana.isBackpack) return window.solana;
   return null;
 }
 
+// Connect Wallet
 document.getElementById("connectBtn").onclick = async () => {
   const provider = getBackpackProvider();
   if (!provider) {
-    alert("Backpack wallet not detected. Make sure Backpack is installed and enabled for this site.");
+    alert("Backpack wallet not detected. Please install or enable Backpack.");
     return;
   }
 
   try {
-    // Some providers use connect(), some use request with 'connect' method
     let res;
-    if (provider.connect) {
-      res = await provider.connect();
-    } else if (provider.request) {
-      res = await provider.request({ method: "connect" });
-    } else {
-      throw new Error("Unsupported Backpack provider API");
-    }
+    if (provider.connect) res = await provider.connect();
+    else if (provider.request) res = await provider.request({ method: "connect" });
+    else throw new Error("Unsupported Backpack provider");
 
-    // Normalize public key string
-    const pub = (res && res.publicKey) ? res.publicKey.toString() : (res && res[0] ? res[0].toString() : null);
+    const pub = res?.publicKey?.toString() || (res?.[0]?.toString());
     if (!pub) throw new Error("No public key returned");
 
     walletAddress = pub;
     document.getElementById("wallet").innerText = "Wallet: " + walletAddress;
     document.getElementById("scanBtn").disabled = false;
+
   } catch (e) {
     console.error(e);
     alert("Wallet connection failed: " + (e.message || e));
   }
 };
 
-document.getElementById("scanBtn").onclick = async () => {
-  const uid = document.getElementById("carvUid").value;
-  if (uid) document.getElementById("uid").innerText = "CARV UID: " + uid;
+// Fetch CARV Profile
 async function getCarvProfile(uid) {
   try {
     const res = await fetch(`https://api.carv.io/v1/profile/${uid}`);
     const data = await res.json();
 
-    document.getElementById("carvProfile").style.display = "block";
-    document.getElementById("carvAvatar").src = data.data.avatar;
-    document.getElementById("carvName").innerText = data.data.username;
-
+    if (data?.data) {
+      document.getElementById("carvProfile").style.display = "block";
+      document.getElementById("carvAvatar").src = data.data.avatar;
+      document.getElementById("carvName").innerText = data.data.username;
+    }
   } catch (err) {
-    console.log("CARV API error:", err);
+    console.log("CARV API Error:", err);
   }
 }
 
-  document.getElementById const uid = document.getElementById("carvUid").value;
-getCarvProfile(uid);
-("result").innerText = "🔍 Scanning soul...";
+// Scan Soul Button
+document.getElementById("scanBtn").onclick = async () => {
+  const uid = document.getElementById("carvUid").value;
+
+  if (uid) {
+    document.getElementById("uid").innerText = "CARV UID: " + uid;
+    await getCarvProfile(uid);
+  }
+
+  document.getElementById("result").innerText = "🔍 Scanning soul...";
 
   setTimeout(() => {
     document.getElementById("result").innerHTML =
