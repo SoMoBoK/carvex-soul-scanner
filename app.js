@@ -1,59 +1,138 @@
-async function scanSoul() {
-  const input = document.getElementById("walletInput").value.trim();
-  const resultBox = document.getElementById("result");
+// ==============================
+// Wallet + Providers
+// ==============================
+let walletAddress = null;
 
-  if (!input) {
-    resultBox.style.display = "block";
-    resultBox.innerHTML = "⚠️ Please enter a wallet address, CARV uID, or ENS.";
+function getBackpackProvider() {
+  if (window.backpack) return window.backpack;
+  if (window.Backpack) return window.Backpack;
+  if (window.solana && window.solana.isBackpack) return window.solana;
+  return null;
+}
+
+function getBaseProvider() {
+  if (window.ethereum && window.ethereum.isMetaMask) return window.ethereum;
+  return null;
+}
+
+// ==============================
+// CARV Profile Fetch
+// ==============================
+async function getCarvProfile(uid) {
+  try {
+    const res = await fetch(`https://api.carv.io/v1/profile/${uid}`);
+    const data = await res.json();
+
+    if (data?.data) {
+      document.getElementById("carvProfile").style.display = "block";
+      document.getElementById("carvAvatar").src = data.data.avatar;
+      document.getElementById("carvName").innerText = data.data.username;
+    }
+  } catch (e) {
+    console.log("CARV API Error:", e);
+  }
+}
+
+// ==============================
+// Soul Logic
+// ==============================
+function getSoulArchetype(score) {
+  if (score >= 90) return "✨ Visionary";
+  if (score >= 75) return "⚡ Builder";
+  if (score >= 60) return "🧭 Explorer";
+  return "🌱 Rising Soul";
+}
+
+function getSoulXP(score) {
+  return Math.floor(score * 1.2);
+}
+
+// ==============================
+// Wallet Connect Button
+// ==============================
+document.getElementById("connectBtn").onclick = async () => {
+  const backpack = getBackpackProvider();
+  const base = getBaseProvider();
+
+  let provider = backpack || base;
+
+  if (!provider) {
+    alert("No wallet found. Install Backpack or MetaMask.");
     return;
   }
 
-  // Show scanning UI
+  try {
+    // Base (MetaMask)
+    if (provider === base) {
+      const accounts = await provider.request({ method: "eth_requestAccounts" });
+      walletAddress = accounts[0];
+      document.getElementById("wallet").innerText = "Base Wallet: " + walletAddress;
+      document.getElementById("scanBtn").disabled = false;
+      return;
+    }
+
+    // Backpack
+    const res = await provider.connect();
+    walletAddress = res.publicKey.toString();
+    document.getElementById("wallet").innerText = "Backpack Wallet: " + walletAddress;
+    document.getElementById("scanBtn").disabled = false;
+  } catch (err) {
+    alert("Wallet connection failed: " + err.message);
+  }
+};
+
+// ==============================
+// Scan Soul Button
+// ==============================
+document.getElementById("scanBtn").onclick = async () => {
+  const uid = document.getElementById("carvUid").value;
+  const resultBox = document.getElementById("result");
+
+  if (uid) {
+    document.getElementById("uid").innerText = "CARV UID: " + uid;
+    getCarvProfile(uid);
+  }
+
+  // Show scanning animation
   resultBox.style.display = "block";
   resultBox.innerHTML = `
     <div class="spinner"></div>
-    <div class="scanning">Scanning user soul on CARV...</div>
+    <p>🔍 Scanning soul...</p>
   `;
 
-  // Simulate API + AI analysis delay
-  await new Promise((resolve) => setTimeout(resolve, 2200));
+  setTimeout(() => {
+    const score = 72; // static for demo — later dynamic via CARV API
+    const archetype = getSoulArchetype(score);
+    const xp = getSoulXP(score);
 
-  // Generate playful AI soul result
-  const aiResult = generateSoulResult();
+    resultBox.innerHTML = `
+      ✅ <b>Soul Score:</b> ${score}<br>
+      🧠 <b>Traits:</b> Loyal, Curious, Builder<br>
+      🎭 <b>Archetype:</b> ${archetype}<br>
+      ⭐ <b>Earned XP:</b> ${xp}<br>
+      🪪 <b>CARV UID:</b> ${uid || "Not Provided"}<br><br>
+      ✨ AI Insight:<br>You're a Web3 explorer carving your destiny.<br><br>
 
-  resultBox.innerHTML = `
-    ✅ <b>Scan Complete</b><br><br>
-    👤 <b>Identity:</b> ${input}<br>
-    🧠 <b>Soul Analysis:</b><br> ${aiResult}<br><br>
+      <button id="shareX">Share on X 🕊️</button>
+    `;
 
-    <button onclick="shareOnX('${input}', \`${aiResult.replace(/`/g, "")}\`)">
-      🚀 Share Soul Score on X
-    </button>
-  `;
-}
+    document.getElementById("shareX").onclick = () => {
+      const text = `I just scanned my Web3 Soul on CARV 🔮
+Soul Score: ${score}
+Archetype: ${archetype}
+XP Earned: ${xp}
+Explore your soul: carvex-soul-scanner.vercel.app`;
 
-// Random playful outputs
-function generateSoulResult() {
-  const results = [
-    "A true Web3 explorer with strong degen spirit and DAO loyalty.",
-    "High synergy score — destined for multi-chain greatness.",
-    "Elite gamer — sharp reflexes, sharper alpha instincts.",
-    "Builder soul detected — innovation bias at 110%.",
-    "Web3 diplomat — bridges communities, vibes always clean.",
-    "Strong on-chain presence. Probably farming something right now.",
-    "Future zk-powered AI cyborg (in a good way).",
-  ];
-  return results[Math.floor(Math.random() * results.length)];
-}
+      const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+      window.open(url, "_blank");
+    };
 
-// Share to X
-function shareOnX(uid, soul) {
-  const text = `🔍 CARV Soul Scan Result\n\n👤 ${uid}\n🧠 ${soul}\n\nScanned via CARV Soul Scanner`;
-  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-  window.open(url, "_blank");
-}
+  }, 1400);
+};
 
-// Dark mode toggle
-function toggleTheme() {
-  document.body.classList.toggle("light-mode");
-}
+// ==============================
+// Dark Mode Toggle
+// ==============================
+document.getElementById("toggleDark").onclick = () => {
+  document.body.classList.toggle("dark");
+};
