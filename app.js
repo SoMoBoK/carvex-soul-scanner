@@ -1,79 +1,100 @@
-let walletAddress = "";
+// ---------- config & helpers ----------
+let walletAddress = null;
+const connectBtn = document.getElementById("connectBtn");
+const scanBtn    = document.getElementById("scanBtn");
+const themeBtn   = document.getElementById("themeBtn");
+const resultBox  = document.getElementById("resultBox");
+const wAddrEl    = document.getElementById("wAddr");
+const uidTextEl  = document.getElementById("uidText");
+const insightEl  = document.getElementById("insightText");
+const walletText = document.getElementById("walletText");
+const shareBtn   = document.getElementById("shareBtn");
 
-// Wallet helpers
-function getBackpackProvider() {
-  return window.backpack?.solana;
-}
-function getBaseProvider() {
-  if (window.ethereum && window.ethereum.isMetaMask) return window.ethereum;
-  return null;
-}
+function getBackpackProvider(){ return window.backpack?.solana || window.solana?.isBackpack ? window.solana : null; }
+function getBaseProvider(){ return (window.ethereum && window.ethereum.isMetaMask) ? window.ethereum : null; }
 
-// Connect wallet
-document.getElementById("connectBtn").onclick = async () => {
-  const backpack = getBackpackProvider();
-  const base = getBaseProvider();
-  let provider = backpack || base;
-
-  if (!provider) return alert("Install Backpack or MetaMask for Base.");
-
+// ---------- wallet connect (Backpack or Base) ----------
+connectBtn.addEventListener("click", async () => {
   try {
+    const backpack = getBackpackProvider();
+    const base = getBaseProvider();
+    const provider = backpack || base;
+    if (!provider) return alert("No wallet detected. Install Backpack (Solana) or MetaMask (Base).");
+
     if (provider === base) {
+      // EVM (MetaMask/Base)
       const accounts = await provider.request({ method: "eth_requestAccounts" });
       walletAddress = accounts[0];
     } else {
+      // Solana / Backpack
       const res = await provider.connect();
-      walletAddress = res.publicKey.toString();
+      // many solana wallets return publicKey object (res.publicKey) or string
+      walletAddress = res?.publicKey?.toString?.() || res?.toString?.() || res;
     }
 
-    document.getElementById("walletDisplay").innerText = walletAddress;
-    document.getElementById("scanBtn").disabled = false;
-
+    walletText.innerText = `Wallet: ${walletAddress}`;
+    wAddrEl.innerText = walletAddress;
+    scanBtn.disabled = false;
+    scanBtn.classList.remove("btn-disabled");
+    scanBtn.classList.add("btn-primary");
+    resultBox.style.display = "none";
   } catch (err) {
-    console.error(err);
-    alert("Wallet connection failed.");
+    console.error("connect error", err);
+    alert("Wallet connection failed: " + (err?.message || err));
   }
-};
+});
 
-// AI fetch
-async function getAIInsight(wallet, carvUID) {
-  const res = await fetch("/api/ask", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ wallet, carvUID })
-  });
+// ---------- call AI endpoint ----------
+async function fetchAIInsight(wallet, carvUid) {
+  try {
+    const res = await fetch("/api/ask", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ wallet, carvUID: carvUid })
+    });
 
-  const data = await res.json();
-  return data.answer || "Soul signal weak — try again ⚡";
+    const json = await res.json();
+    // Accept backend returned { answer: "..." } or { output: "..." }
+    return json?.answer || json?.output || null;
+  } catch (err) {
+    console.error("AI fetch error", err);
+    return null;
+  }
 }
 
-// Scan button
-document.getElementById("scanBtn").onclick = async () => {
-  if (!walletAddress) return alert("Connect Wallet first");
+// ---------- scanning flow ----------
+scanBtn.addEventListener("click", async () => {
+  if (!walletAddress) return alert("Please connect wallet first.");
+  const carvUid = document.getElementById("carvUid").value.trim() || "Not Provided";
 
-  const carvUID = document.getElementById("carvUid").value || "Not Provided";
+  // show spinner + open card
+  resultBox.style.display = "block";
+  insightEl.innerHTML = "<div class='spinner'></div> Channeling CARV AI...";
+  uidTextEl.innerText = carvUid;
+  wAddrEl.innerText = walletAddress;
 
-  document.getElementById("resultBox").style.display = "block";
-  document.getElementById("insightText").innerHTML = `<div class='spinner'></div> Scanning Soul...`;
+  // call backend
+  const aiText = await fetchAIInsight(walletAddress, carvUid);
 
-  const insight = await getAIInsight(walletAddress, carvUID);
+  if (!aiText) {
+    insightEl.innerText = "AI failed to read your soul — try again ⚡";
+  } else {
+    insightEl.innerText = aiText;
+  }
 
-  document.getElementById("wAddr").innerText = walletAddress;
-  document.getElementById("uidText").innerText = carvUID;
-  document.getElementById("insightText").innerText = insight;
-};
+  // update share button action
+  shareBtn.onclick = () => {
+    const short = walletAddress?.slice(0,6) + (walletAddress?.length>10 ? "..." : "");
+    const tweet = `I scanned my CARV soul 🔮\n${short}\n${aiText?.slice(0,140) || ""}\nhttps://carvex-soul-scanner.vercel.app`;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`, "_blank");
+  };
+});
 
-// Theme toggle
-document.getElementById("themeBtn").onclick = () => {
+// ---------- theme toggle ----------
+themeBtn.addEventListener("click", () => {
   document.body.classList.toggle("light");
-  document.getElementById("themeBtn").innerText =
-    document.body.classList.contains("light") ? "🌙 Theme" : "☀️ Theme";
-};
+  // optional: persist theme in localStorage
+});
 
-// Share on X
-document.getElementById("shareBtn").onclick = () => {
-  const text = encodeURIComponent(`Just scanned my Web3 soul on CARV 🔮✨  
-Wallet: ${walletAddress.slice(0,6)}...  
-Try yours: https://carvex-soul-scanner.vercel.app`);
-  window.open(`https://twitter.com/intent/tweet?text=${text}`);
-};
+// friendly console info
+console.log("CARV Soul Scanner ready");
